@@ -4,9 +4,10 @@ from drupal8 import DrupalRest
 from pprint import pprint
 import json 
 
-d = DrupalRest('http://rolls-royce-ila.dev/', '', 'app_user', 'test123')
+d = DrupalRest('http://drupal8.dev/', '', 'app_user', 'pass_of_app_user')
 d.drupalLogin()
 
+// Retrieving a node with nid 2
 node = d.retrieveNode(2)
 pprint(node)
 
