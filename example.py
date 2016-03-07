@@ -7,7 +7,7 @@ import json
 d = DrupalRest('http://drupal8.dev/', '', 'app_user', 'pass_of_app_user')
 d.drupalLogin()
 
-// Retrieving a node with nid 2
+# Retrieving a node with nid 2
 node = d.retrieveNode(2)
 pprint(node)
 
