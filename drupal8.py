@@ -1,77 +1,41 @@
-#! /usr/local/bin/python
+#! /usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import pycurl
-import json
-import cStringIO
-import urllib
-import string
+import requests
+import pprint
+import simplejson
 
 from pprint import pprint
 
 
 class DrupalRest:
 	host = ''
-	endpoint = ''
-	username = ''
-	password = ''
-	session = ''
-	csrf_token = ''
-	
-	def __init__(self, host, endpoint, username, password):
+	user = {}
+	login_response = {}
+	auth_header = {}
+
+	def __init__(self, host, endpoint, user):
 		self.host = host
 		self.endpoint = endpoint
-		self.username = username
-		self.password = password
-	
-	def drupalLogin(self):
-		user = {'name': self.username, 'pass': self.password, 'form_id': 'user_login_form'}
-		postData =  urllib.urlencode(user)
-		
-		response = cStringIO.StringIO()
-		login_request_url = self.host + self.endpoint + 'user/login?_format=json'
-		
-		c = pycurl.Curl()
-		c.setopt(pycurl.URL, login_request_url)
-		
-		c.setopt(pycurl.AUTOREFERER, 1)
-		c.setopt(pycurl.FOLLOWLOCATION, True)
-		c.setopt(pycurl.COOKIEFILE, '')
-		c.setopt(pycurl.COOKIEJAR, 'cookies.txt')
-		c.setopt(pycurl.HTTPHEADER, ['Accept: application/json'])
-		c.setopt(pycurl.HTTPHEADER, ['Content-type: application/x-www-form-urlencoded'])
-		c.setopt(pycurl.WRITEFUNCTION, response.write)
-		c.setopt(pycurl.POST, 1)
-		c.setopt(pycurl.POSTFIELDS, postData)
-		c.perform()
-		c.close()
+		self.user = user
 
-		csrf_token_str = cStringIO.StringIO()
-		#very important is that here the URL is without the endpoint
-		csrf_token_request_url = self.host + 'rest/session/token'
-		
-		z = pycurl.Curl()
-		z.setopt(pycurl.URL, csrf_token_request_url)
-		z.setopt(pycurl.WRITEFUNCTION, csrf_token_str.write)
-		z.setopt(pycurl.COOKIEFILE, 'cookies.txt')
-		z.perform()
-		z.close()
-		self.csrf_token = str(csrf_token_str.getvalue())
+	def drupalLogin(self):
+		login_request_url = self.host + 'oauth/token'
+		r = requests.post(login_request_url, data=self.user, headers={})
+		self.login_response = simplejson.loads(r.text)
+		self.auth_header = {'Authorization': self.login_response['token_type'] + ' ' + self.login_response['access_token']}
 
 	def retrieveNode(self, nid):
-		response = cStringIO.StringIO()
-		
-		c = pycurl.Curl()
-		node_request_url = self.host + self.endpoint + 'node/' + str(nid) + '?_format=json'
-		c.setopt(pycurl.URL, node_request_url)
-		c.setopt(pycurl.HTTPHEADER, ['Accept: application/json'])
-		c.setopt(pycurl.COOKIEFILE, 'cookies.txt')
-		c.setopt(pycurl.WRITEFUNCTION, response.write)
-		c.perform()
-		c.close()
-		
-		result_json = response.getvalue()
-		pprint(result_json)
-		result = json.loads(response.getvalue())
-		return result
+		request_url = self.host + 'node/' + str(nid) + '?_format=json'
+		r = requests.get(request_url, data={}, headers=self.auth_header)
+		return simplejson.loads(r.text)
 
+	def createNode(self, node):
+		request_url = self.host + 'node?_format=hal_json'
+		r = requests.post(request_url, data=simplejson.dumps(node), headers=self.auth_header.update({'Content-type': 'application/hal+json', 'Accept': 'application/hal+json'}))
+		return r.text
+
+	def createFile(self, file):
+		request_url = self.host + 'entity/file?_format=hal_json'
+		r = requests.post(request_url, data=simplejson.dumps(file), headers=self.auth_header.update({'Content-type': 'application/hal+json', 'Accept': 'application/hal+json'}))
+		return r.text

@@ -1,5 +1,8 @@
-# python_drupal8_rest
+# Python 3 class that makes integration with Drupal 8 REST api
 Python class for interacting with the Drupal 8 integrated REST api
 
-The main difference with the drupal 7 version of this class is that here is used COOKIEJAR to store the session.
+## Installing dependencies
+pip3 install -r requirements.txt
+
+
 The declared methods are tested and working.

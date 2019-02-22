@@ -1,26 +1,29 @@
-#! /usr/local/bin/python
+#! /usr/local/bin/python3
 
 from drupal8 import DrupalRest
 from pprint import pprint
-import json 
+import base64
 
-d = DrupalRest('http://drupal8.dev/', '', 'app_user', 'pass_of_app_user')
+
+d = DrupalRest('http://localhost/dashboard/web/', {'username': 'test', 'password': 'test', 'client_secret': 'abc123', 'grant_type': 'password', 'client_id': 'b27f3a91-c033-4fa5-adf2-dd06050dcf4b', 'scope': 'rest'})
 d.drupalLogin()
 
 # Retrieving a node with nid 2
-node = d.retrieveNode(2)
-pprint(node)
+#node = d.retrieveNode(1)
+#pprint(node)
 
 
-#base64 = open('cat.jpg').read(100000).encode('base64')
-#file_cat = {'filename': 'cat.jpg', 'file': base64}
+#cat_file = open('cat.jpg', "rb").read()
+#file_cat = {"_links":{"type":{"href":"http://localhost/dashboard/web/rest/type/file/image"},},
+#"filename":[{"value":"cat.jpg"}],
+#"filemime":[{"value":"image/jpeg"}],
+#"type": [{"target_id": "image"}],
+#"data":[{"value": base64.b64encode(cat_file)}]}
 
 #file = d.createFile(file_cat)
+#pprint(file)
 
 
-#new_node_array = {'title': 'last test 66', 'type': 'article', 'field_image[und][0][fid]':file['fid']}
-#
-#new_node_array = {'values[title]': 'last test 66', 'values[type]': 'article'}
-#new_node = d.createNode(new_node_array)
-#pprint(new_node)
-
+new_node_array = {"_links": {"type": {"href":"http://localhost/dashboard/web/rest/type/node/post"}}, "type": [{"target_id":"post"}], "title":[{"value":"The rolley, the dimond, the basel"}]}
+new_node = d.createNode(new_node_array)
+pprint(new_node)
